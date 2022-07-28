@@ -16,6 +16,10 @@ class GatherReleaseCommand extends Command
     {
         $release = new Release;
 
-        dd($release->lastTag());
+        $release->changelog()->contributors->keyBy('login')->dd();
+
+        render(view())
+
+        return Command::SUCCESS;
     }
 }

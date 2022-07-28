@@ -17,7 +17,10 @@
         "illuminate/support": "^9.22",
         "composer/semver": "^3.3",
         "psr/cache": "~2.0",
-        "cache/filesystem-adapter": "~1.2"
+        "cache/filesystem-adapter": "~1.2",
+        "nunomaduro/termwind": "^1.13",
+        "illuminate/view": "^9.22",
+        "illuminate/container": "^9.22"
     },
     "require-dev": {
         "symfony/var-dumper": "~6.0"

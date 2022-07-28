@@ -2,6 +2,7 @@
 
 namespace Flarum\Release\GitHub;
 
+use Carbon\Carbon;
 use Flarum\Release\Release;
 use Illuminate\Support\Collection;
 
@@ -23,6 +24,8 @@ class Commits
 
         $commits = new Collection;
 
+        $since = Carbon::parse($this->release->lastTag()->time);
+
         while ($page !== null) {
             $response = $this->release
                 ->api
@@ -33,18 +36,23 @@ class Commits
                     $this->release->repository(),
                     [
                         'sha'      => $this->release->branch,
-                        'since'    => $this->release->lastTag(),
+                        'since'    => $since->addSecond()->toIso8601String(),
                         'per_page' => 100,
                         'page'     => $page
                     ]
                 );
 
-            $commits->merge($response ?? []);
+            $commits = $commits->merge($response ?? []);
 
             empty($response) ? $page = null : $page++;
         }
 
         return $commits;
+    }
+
+    public function withoutBot()
+    {
+        return $this->where('author.login', '!=', 'flarum-bot');
     }
 
     public function __call(string $name, array $arguments)
