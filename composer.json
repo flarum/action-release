@@ -1,0 +1,25 @@
+{
+    "name": "flarum/release",
+    "description": "Generates releases, contributors, issue reporters and donators",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Flarum\\Release\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">= 8.1",
+        "knplabs/github-api": "^3.7",
+        "guzzlehttp/guzzle": "^7.4",
+        "symfony/dotenv": "^6.1",
+        "symfony/console": "^6.1",
+        "illuminate/support": "^9.22",
+        "composer/semver": "^3.3",
+        "psr/cache": "~2.0",
+        "cache/filesystem-adapter": "~1.2"
+    },
+    "require-dev": {
+        "symfony/var-dumper": "~6.0"
+    }
+}
