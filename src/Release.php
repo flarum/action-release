@@ -69,19 +69,20 @@ class Release
 
     protected function api(): Client
     {
+        $cache = new Pool(
+            new FileSystem([
+                'path' => __DIR__ . '/../cache/github/'
+            ])
+        );
+
         $http = new Builder;
 
         $http->addPlugin(new GitHub\Plugins\RateLimitPlugin);
+        $http->addCache($cache);
 
         $client = new Client($http);
 
         $client->authenticate($_ENV['GITHUB_TOKEN'], AuthMethod::ACCESS_TOKEN);
-
-        $client->addCache(new Pool(
-            new FileSystem([
-                'path' => __DIR__ . '/../cache/github/'
-            ])
-        ));
 
         return $client;
     }
@@ -100,10 +101,22 @@ class Release
                     Arr::get($commit, 'author.login')
                 );
 
-                $changelog->changes->push($change);
+                $changelog
+                    ->changes
+                    ->push($change);
+
                 $changelog
                     ->contributors
                     ->push(Arr::get($commit, 'author'));
+            });
+
+        $changelog
+            ->changes
+            ->whereNotNull('issue')
+            ->each(function (GitHub\Change $change) use ($changelog) {
+                $changelog
+                    ->reporters
+                    ->push(Arr::get($change->issue, 'user'));
             });
 
         return $changelog;

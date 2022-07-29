@@ -12,7 +12,7 @@ class Change
     public array $labels = [];
     public ?string $type = null;
     public ?string $subject = null;
-    public ?int $issue = null;
+    public ?array $issue = null;
 
     public function __construct(
         protected Release $release,
@@ -64,10 +64,17 @@ class Change
         $this->message = ($this->subject ? "$this->subject " : '') . $description;
     }
 
-    protected function getIssue(string $body): ?int
+    protected function getIssue(string $body): ?array
     {
-        if (preg_match('~\#(?<issue>[0-9]+)~', $body, $m)) {
-            return intval($m['issue']);
+        if (preg_match('~\#(?<issue>[0-9]+)~m', $body, $m)) {
+            return Arr::only($this->release
+                ->api
+                ->issues()
+                ->show(
+                    $this->release->repositoryUsername(),
+                    $this->release->repository(),
+                    intval($m['issue'])
+                ), ['number', 'user', 'labels', 'author_association']);
         }
 
         return null;

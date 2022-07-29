@@ -26,19 +26,27 @@ class GatherReleaseCommand extends Command
 
         $writer->header('Contributors', 2);
 
-        $writer->divider();
-
         $release
             ->changelog()
             ->contributors
             ->countBy('login')
+            ->sortDesc()
             ->each(fn ($count, $login) => $writer->li("user $login, commits $count"));
 
         $writer->divider();
 
-        $writer->header('Changes', 2);
+        $writer->header('Reporters', 2);
+
+        $release
+            ->changelog()
+            ->reporters
+            ->countBy('login')
+            ->sortDesc()
+            ->each(fn ($count, $login) => $writer->li("user $login, reports $count"));
 
         $writer->divider();
+
+        $writer->header('Changes', 2);
 
         $release
             ->changelog()
@@ -49,7 +57,6 @@ class GatherReleaseCommand extends Command
 
                 $set->each(fn ($change) => $writer->li("$change"));
             });
-
 
         $writer->close();
 
