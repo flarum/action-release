@@ -2,21 +2,21 @@
 
 namespace Flarum\Release\OpenCollective;
 
+use Flarum\Release\Donations as Collection;
 use Flarum\Release\Release;
 use GraphQL\QueryBuilder\QueryBuilder;
 use GraphQL\RawObject;
-use Illuminate\Support\Collection;
 
 /**
  * @mixin Collection
  */
-class Contributions
+class Donations
 {
-    protected Collection $contributions;
+    protected Collection $donations;
 
     public function __construct(protected Release $release)
     {
-        $this->contributions = $this->retrieve();
+        $this->donations = $this->retrieve();
     }
 
     protected function retrieve(): Collection
@@ -24,6 +24,7 @@ class Contributions
         $transactions = (new QueryBuilder('transactions'))
             ->setArgument('dateFrom', $this->release->lastTag()->time)
             ->setArgument('type', new RawObject('CREDIT'))
+            ->setArgument('kind', new RawObject('CONTRIBUTION'))
             ->setArgument('account', new RawObject('{slug: "flarum"}'))
             ->selectField($this->transaction());
 
@@ -31,8 +32,7 @@ class Contributions
             ->openCollective
             ->runQuery($transactions);
 
-        return (new Collection($response->getData()->transactions->nodes ?? []))
-            ->filter(fn ($backer) => !$backer->fromAccount->isIncognito && !$backer->fromAccount->isArchived);
+        return Collection::makeFromOpenCollective($response->getData()->transactions->nodes ?? []);
     }
 
     protected function transaction(): QueryBuilder
@@ -40,6 +40,7 @@ class Contributions
         return (new QueryBuilder('nodes'))
             ->selectField((new QueryBuilder('fromAccount'))
                 ->selectField('name')
+                ->selectField('slug')
                 ->selectField('type')
                 ->selectField('website')
                 ->selectField('twitterHandle')
@@ -47,7 +48,7 @@ class Contributions
                 ->selectField('isIncognito')
                 ->selectField('isArchived')
             )
-            ->selectField((new QueryBuilder('amountInHostCurrency'))
+            ->selectField((new QueryBuilder('amount'))
                 ->selectField('value')
                 ->selectField('currency')
             )
@@ -56,6 +57,6 @@ class Contributions
 
     public function __call(string $name, array $arguments)
     {
-        return call_user_func_array([$this->contributions, $name], $arguments);
+        return call_user_func_array([$this->donations, $name], $arguments);
     }
 }

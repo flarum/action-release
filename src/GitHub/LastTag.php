@@ -30,7 +30,7 @@ class LastTag
 
         while($page !== null) {
             $response = $this->release
-                ->gitHub
+                ->gitHubRest
                 ->repository()
                 ->tags(
                     $this->release->repositoryUsername(),
@@ -51,7 +51,7 @@ class LastTag
         }
 
         if ($latest) {
-            $commit = $this->release->gitHub->repo()
+            $commit = $this->release->gitHubRest->repo()
                 ->commits()
                 ->show(
                     $this->release->repositoryUsername(),

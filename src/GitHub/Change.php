@@ -33,7 +33,7 @@ class Change
         $repository = Release::REPOSITORY;
 
         $pr = Arr::get($this->release
-            ->gitHub
+            ->gitHubRest
             ->search()
             ->issues("$sha repo:$repository is:pr"), 'items.0');
 
@@ -67,7 +67,7 @@ class Change
     {
         if (preg_match('~\#(?<issue>[0-9]+)~m', $body, $m)) {
             return Arr::only($this->release
-                ->gitHub
+                ->gitHubRest
                 ->issues()
                 ->show(
                     $this->release->repositoryUsername(),
