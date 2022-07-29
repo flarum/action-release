@@ -4,8 +4,9 @@ namespace Flarum\Release;
 
 use Composer\Semver\VersionParser;
 use Github\AuthMethod;
-use Github\Client;
+use Github\Client as GitHubClient;
 use Github\HttpClient\Builder;
+use GraphQL\Client as GraphQLClient;
 use Illuminate\Support\Arr;
 use Stash\Driver\FileSystem;
 use Stash\Pool;
@@ -13,14 +14,16 @@ use Stash\Pool;
 class Release
 {
     const REPOSITORY = 'flarum/framework';
-    public Client $api;
+    public GitHubClient $gitHub;
+    public GraphQLClient $openCollective;
     protected ?string $nextTag = null;
 
     public function __construct(
         public string $branch = 'main'
     )
     {
-        $this->api = $this->api();
+        $this->gitHub = $this->gitHubClient();
+        $this->openCollective = $this->openCollectiveClient();
     }
 
     public function repositoryUsername(): string
@@ -67,26 +70,6 @@ class Release
         return new GitHub\LastTag($this);
     }
 
-    protected function api(): Client
-    {
-        $cache = new Pool(
-            new FileSystem([
-                'path' => __DIR__ . '/../cache/github/'
-            ])
-        );
-
-        $http = new Builder;
-
-        $http->addPlugin(new GitHub\Plugins\RateLimitPlugin);
-        $http->addCache($cache);
-
-        $client = new Client($http);
-
-        $client->authenticate($_ENV['GITHUB_TOKEN'], AuthMethod::ACCESS_TOKEN);
-
-        return $client;
-    }
-
     public function changelog(): Changelog
     {
         $changelog = new Changelog;
@@ -119,5 +102,37 @@ class Release
             });
 
         return $changelog;
+    }
+
+    public function donations()
+    {
+        return (new OpenCollective\Contributions($this));
+    }
+
+    private function gitHubClient(): GitHubClient
+    {
+        $http = new Builder;
+
+        $http->addPlugin(new Http\Plugins\RateLimitPlugin);
+
+        $client = new GitHubClient($http);
+
+        $client->authenticate($_ENV['GITHUB_TOKEN'], AuthMethod::ACCESS_TOKEN);
+
+        return $client;
+    }
+
+    private function openCollectiveClient(): GraphQLClient
+    {
+        $http = new Builder;
+
+        $http->addPlugin(new Http\Plugins\RateLimitPlugin);
+
+        return new GraphQLClient(
+            'https://api.opencollective.com/graphql/v2',
+            ['Api-Key' => $_ENV['OPEN_COLLECTIVE_TOKEN']],
+            [],
+            $http->getHttpClient()
+        );
     }
 }

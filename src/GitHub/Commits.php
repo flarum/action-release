@@ -28,7 +28,7 @@ class Commits
 
         while ($page !== null) {
             $response = $this->release
-                ->api
+                ->gitHub
                 ->repository()
                 ->commits()
                 ->all(

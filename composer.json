@@ -11,20 +11,25 @@
     "require": {
         "php": ">= 8.1",
         "composer/semver": "^3.3",
+        "gmostafa/php-graphql-client": "^1.13",
+        "gmostafa/php-graphql-oqm": "dev-enhancement-mutations",
         "guzzlehttp/guzzle": "^7.4",
         "illuminate/container": "^9.22",
         "illuminate/support": "^9.22",
         "knplabs/github-api": "^3.7",
         "league/flysystem": "~3.0.16",
-        "psr/cache": "~1.0",
+        "psr/cache": "~3.0",
         "symfony/console": "^6.1",
-        "symfony/dotenv": "^6.1",
-        "tedivm/stash": "^0.17.6"
+        "symfony/dotenv": "^6.1"
     },
     "require-dev": {
         "symfony/var-dumper": "~6.0"
     },
     "config": {
         "sort-packages": true
-    }
+    },
+    "repositories": [{
+        "type": "vcs",
+        "url": "https://github.com/luceos/php-graphql-oqm"
+    }]
 }

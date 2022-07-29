@@ -23,43 +23,51 @@ class GatherReleaseCommand extends Command
 
         $writer->header("Release {$release->nextTag()}");
 
+//        $writer->divider();
+//
+//        $writer->header('Contributors', 2);
+//
+//        $release
+//            ->changelog()
+//            ->contributors
+//            ->countBy('login')
+//            ->sortDesc()
+//            ->each(fn ($count, $login) => $writer->li("user $login, commits $count"));
+//
+//        $writer->divider();
+//
+//        $writer->header('Reporters', 2);
+//
+//        $release
+//            ->changelog()
+//            ->reporters
+//            ->countBy('login')
+//            ->sortDesc()
+//            ->each(fn ($count, $login) => $writer->li("user $login, reports $count"));
+//
+//        $writer->divider();
+//
+//        $compare = "https://github.com/".Release::REPOSITORY."/compare/{$release->lastTag()->name}...{$release->nextTag()}";
+//        $writer->header("[{$release->nextTag()}]($compare)", 2);
+//
+//        $release
+//            ->changelog()
+//            ->changes
+//            ->sortBy('message')
+//            ->groupBy('type')
+//            ->each(function (Collection $set, string $key) use ($writer) {
+//                $writer->header($key, 3);
+//
+//                $set->each(fn ($change) => $writer->li("$change"));
+//            });
+
         $writer->divider();
 
-        $writer->header('Contributors', 2);
+        $writer->header('Donations', 2);
 
         $release
-            ->changelog()
-            ->contributors
-            ->countBy('login')
-            ->sortDesc()
-            ->each(fn ($count, $login) => $writer->li("user $login, commits $count"));
+            ->donations();
 
-        $writer->divider();
-
-        $writer->header('Reporters', 2);
-
-        $release
-            ->changelog()
-            ->reporters
-            ->countBy('login')
-            ->sortDesc()
-            ->each(fn ($count, $login) => $writer->li("user $login, reports $count"));
-
-        $writer->divider();
-
-        $compare = "https://github.com/".Release::REPOSITORY."/compare/{$release->lastTag()->name}...{$release->nextTag()}";
-        $writer->header("[{$release->nextTag()}]($compare)", 2);
-
-        $release
-            ->changelog()
-            ->changes
-            ->sortBy('message')
-            ->groupBy('type')
-            ->each(function (Collection $set, string $key) use ($writer) {
-                $writer->header($key, 3);
-
-                $set->each(fn ($change) => $writer->li("$change"));
-            });
 
         $writer->close();
 
