@@ -98,7 +98,8 @@ class Release
                     $this,
                     Arr::get($commit, 'sha'),
                     Arr::get($commit, 'commit.message'),
-                    Arr::get($commit, 'author.login')
+                    Arr::get($commit, 'author.login'),
+                    Arr::get($commit, 'stats')
                 );
 
                 $changelog

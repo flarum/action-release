@@ -18,7 +18,8 @@ class Change
         protected Release $release,
         public string $sha,
         public string $message,
-        public string $login
+        public string $login,
+        public array $stats
     )
     {
         $this->enrich($sha);
