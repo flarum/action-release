@@ -2,17 +2,19 @@
 
 namespace Flarum\Release;
 
-use Cache\Adapter\Filesystem\FilesystemCachePool;
+use Composer\Semver\VersionParser;
 use Github\AuthMethod;
 use Github\Client;
+use Github\HttpClient\Builder;
 use Illuminate\Support\Arr;
-use League\Flysystem\Adapter\Local;
-use League\Flysystem\Filesystem;
+use Stash\Driver\FileSystem;
+use Stash\Pool;
 
 class Release
 {
     const REPOSITORY = 'flarum/framework';
     public Client $api;
+    protected ?string $nextTag = null;
 
     public function __construct(
         public string $branch = 'main'
@@ -36,6 +38,30 @@ class Release
         return new GitHub\Commits($this);
     }
 
+    public function nextTag(): string
+    {
+        if (! $this->nextTag) {
+            $lastTag = $this->lastTag();
+
+            $normalized = (new VersionParser())->normalize($lastTag->name);
+
+            [$major, $minor, $patch] = explode('.', $normalized);
+
+            $minor++;
+
+            $this->nextTag = "$major.$minor.0";
+        }
+
+        return $this->nextTag;
+    }
+
+    public function setTag(string $tag): static
+    {
+        $this->nextTag = $tag;
+
+        return $this;
+    }
+
     public function lastTag(): GitHub\LastTag
     {
         return new GitHub\LastTag($this);
@@ -43,13 +69,18 @@ class Release
 
     protected function api(): Client
     {
-        $client = new Client();
+        $http = new Builder;
+
+        $http->addPlugin(new GitHub\Plugins\RateLimitPlugin);
+
+        $client = new Client($http);
 
         $client->authenticate($_ENV['GITHUB_TOKEN'], AuthMethod::ACCESS_TOKEN);
 
-        $client->addCache(new FilesystemCachePool(
-            new Filesystem(new Local(__DIR__ . '/../cache/')),
-            'github'
+        $client->addCache(new Pool(
+            new FileSystem([
+                'path' => __DIR__ . '/../cache/github/'
+            ])
         ));
 
         return $client;
@@ -62,7 +93,14 @@ class Release
         $this->commits()
             ->withoutBot()
             ->each(function (array $commit) use ($changelog) {
-                $changelog->changes->push(Arr::get($commit, 'commit.message'));
+                $change = new GitHub\Change(
+                    $this,
+                    Arr::get($commit, 'sha'),
+                    Arr::get($commit, 'commit.message'),
+                    Arr::get($commit, 'author.login')
+                );
+
+                $changelog->changes->push($change);
                 $changelog
                     ->contributors
                     ->push(Arr::get($commit, 'author'));
