@@ -4,6 +4,7 @@ namespace Flarum\Release\Commands;
 
 use Flarum\Release\MarkdownWriter;
 use Flarum\Release\Release;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -46,7 +47,8 @@ class GatherReleaseCommand extends Command
 
         $writer->divider();
 
-        $writer->header('Changes', 2);
+        $compare = "https://github.com/".Release::REPOSITORY."/compare/{$release->lastTag()->name}...{$release->nextTag()}";
+        $writer->header("[{$release->nextTag()}]($compare)", 2);
 
         $release
             ->changelog()

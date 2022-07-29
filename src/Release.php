@@ -49,7 +49,7 @@ class Release
 
             $minor++;
 
-            $this->nextTag = "$major.$minor.0";
+            $this->nextTag = "v$major.$minor.0";
         }
 
         return $this->nextTag;
@@ -98,8 +98,6 @@ class Release
                     $this,
                     Arr::get($commit, 'sha'),
                     Arr::get($commit, 'commit.message'),
-                    Arr::get($commit, 'author.login'),
-                    Arr::get($commit, 'stats')
                 );
 
                 $changelog

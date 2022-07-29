@@ -17,9 +17,7 @@ class Change
     public function __construct(
         protected Release $release,
         public string $sha,
-        public string $message,
-        public string $login,
-        public array $stats
+        public string $message
     )
     {
         $this->enrich($sha);
