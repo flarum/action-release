@@ -51,6 +51,7 @@ class GatherReleaseCommand extends Command
         $release
             ->changelog()
             ->changes
+            ->sortBy('message')
             ->groupBy('type')
             ->each(function (Collection $set, string $key) use ($writer) {
                 $writer->header($key, 3);
