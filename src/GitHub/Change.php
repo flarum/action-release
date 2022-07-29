@@ -88,6 +88,10 @@ class Change
                 return 'Added';
             case 'fix':
                 return 'Fixed';
+            case 'removed':
+            case 'deprecated':
+            case 'security':
+                return Str::ucfirst($type);
             default:
                 return 'Changed';
         }
