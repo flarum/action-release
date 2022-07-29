@@ -2,14 +2,14 @@
 
 namespace Flarum\Release\OpenCollective;
 
-use Carbon\Carbon;
-use Flarum\Release\GraphQL\OpenCollective\AccountReferenceInputInputObject;
-use Flarum\Release\GraphQL\OpenCollective\RootQueryObject;
-use Flarum\Release\GraphQL\OpenCollective\RootTransactionsArgumentsObject;
-use Flarum\Release\GraphQL\OpenCollective\TransactionTypeEnumObject;
 use Flarum\Release\Release;
+use GraphQL\QueryBuilder\QueryBuilder;
+use GraphQL\RawObject;
 use Illuminate\Support\Collection;
 
+/**
+ * @mixin Collection
+ */
 class Contributions
 {
     protected Collection $contributions;
@@ -21,32 +21,41 @@ class Contributions
 
     protected function retrieve(): Collection
     {
-        $queryTransactions = (new RootTransactionsArgumentsObject())
-            ->setType(TransactionTypeEnumObject::CREDIT)
-            ->setAccount([(new AccountReferenceInputInputObject)->setSlug('flarum')])
-            ->setDateFrom(Carbon::parse($this->release->lastTag()->time))
-            ->setDateTo(Carbon::now());
-
-        $transactions = (new RootQueryObject)
-            ->selectTransactions($queryTransactions)
-            ->selectAmount();
-
-//        $transactions = (new Query('transactions'))
-//            ->setVariables([
-//                new Variable('type', 'Enum', true, 'CREDIT')
-//            ])
-//            ->setArguments(['type' => 'CREDIT'])
-//            ->setSelectionSet(['amount']);
-//
-//        $account = (new QueryBuilder('account'))
-//            ->setArgument('slug', 'flarum')
-//            ->selectField('name')
-//            ->selectField($transactions);
+        $transactions = (new QueryBuilder('transactions'))
+            ->setArgument('dateFrom', $this->release->lastTag()->time)
+            ->setArgument('type', new RawObject('CREDIT'))
+            ->setArgument('account', new RawObject('{slug: "flarum"}'))
+            ->selectField($this->transaction());
 
         $response = $this->release
             ->openCollective
             ->runQuery($transactions);
 
-        dd($response->getData());
+        return (new Collection($response->getData()->transactions->nodes ?? []))
+            ->filter(fn ($backer) => !$backer->fromAccount->isIncognito && !$backer->fromAccount->isArchived);
+    }
+
+    protected function transaction(): QueryBuilder
+    {
+        return (new QueryBuilder('nodes'))
+            ->selectField((new QueryBuilder('fromAccount'))
+                ->selectField('name')
+                ->selectField('type')
+                ->selectField('website')
+                ->selectField('twitterHandle')
+                ->selectField('githubHandle')
+                ->selectField('isIncognito')
+                ->selectField('isArchived')
+            )
+            ->selectField((new QueryBuilder('amountInHostCurrency'))
+                ->selectField('value')
+                ->selectField('currency')
+            )
+            ->selectField('createdAt');
+    }
+
+    public function __call(string $name, array $arguments)
+    {
+        return call_user_func_array([$this->contributions, $name], $arguments);
     }
 }

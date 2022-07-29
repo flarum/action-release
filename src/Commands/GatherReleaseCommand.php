@@ -6,6 +6,7 @@ use Flarum\Release\MarkdownWriter;
 use Flarum\Release\Release;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use NumberFormatter;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -66,11 +67,22 @@ class GatherReleaseCommand extends Command
         $writer->header('Donations', 2);
 
         $release
-            ->donations();
+            ->donations()
+            ->sortBy('amountInHostCurrency.value')
+            ->each(function ($backer) use ($writer) {
+                $money = $this->formatMoney($backer->amountInHostCurrency->value, $backer->amountInHostCurrency->currency);
+
+                $writer->li("{$backer->fromAccount->name}: $money");
+            });
 
 
         $writer->close();
 
         return Command::SUCCESS;
+    }
+
+    protected function formatMoney($value, string $currency)
+    {
+        return (new NumberFormatter('en_US', NumberFormatter::CURRENCY))->formatCurrency($value, $currency);
     }
 }
