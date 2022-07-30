@@ -20,6 +20,10 @@ class GatherReleaseCommand extends Command
     {
         $release = new Release;
 
+        if (isset($_ENV['NEXT_TAG'])) {
+            $release->setTag($_ENV['NEXT_TAG']);
+        }
+
         $writer = new MarkdownWriter($release->nextTag());
 
         $writer->header("Release {$release->nextTag()}");
@@ -78,6 +82,8 @@ class GatherReleaseCommand extends Command
 
 
         $writer->close();
+
+        $release->publish($writer);
 
         return Command::SUCCESS;
     }

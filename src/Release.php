@@ -3,6 +3,7 @@
 namespace Flarum\Release;
 
 use Composer\Semver\VersionParser;
+use Flarum\Release\GitHub\PublishReleasePullRequest;
 use Github\AuthMethod;
 use Github\Client as GitHubClient;
 use Github\HttpClient\Builder;
@@ -109,6 +110,11 @@ class Release
         return Donations::make()
             ->merge((new OpenCollective\Donations($this))->all())
             ->merge((new GitHub\Donations($this))->all());
+    }
+
+    public function publish(MarkdownWriter $writer)
+    {
+        (new PublishReleasePullRequest($this))->publish($writer);
     }
 
     private function newHttp(): Builder

@@ -50,9 +50,11 @@ class Commits
         return $commits;
     }
 
-    public function withoutBot()
+    public function withoutBot(): self
     {
-        return $this->where('author.login', '!=', 'flarum-bot');
+        return $this
+            ->where('author.login', '!=', 'flarum-bot')
+            ->where('author.login', '!=', 'dependabot[bot]');
     }
 
     public function __call(string $name, array $arguments)

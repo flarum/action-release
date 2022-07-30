@@ -44,4 +44,9 @@ class MarkdownWriter
     {
         fclose($this->stream);
     }
+
+    public function __toString(): string
+    {
+        return file_get_contents(__DIR__ . "/../out/$this->path.md");
+    }
 }
