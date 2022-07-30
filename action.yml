@@ -1,0 +1,6 @@
+name: Flarum Release Build
+description: Automatically prepares changelog & retrieves information for release
+author: 'Flarum'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
