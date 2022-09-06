@@ -50,7 +50,7 @@ class Commits
         return $commits;
     }
 
-    public function withoutBot(): self
+    public function withoutBot(): Collection
     {
         return $this
             ->where('author.login', '!=', 'flarum-bot')
