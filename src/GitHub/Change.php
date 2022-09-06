@@ -3,6 +3,7 @@
 namespace Flarum\Release\GitHub;
 
 use Flarum\Release\Release;
+use Github\Exception\RuntimeException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
@@ -66,14 +67,21 @@ class Change
     protected function getIssue(string $body): ?array
     {
         if (preg_match('~\#(?<issue>[0-9]+)~m', $body, $m)) {
-            return Arr::only($this->release
-                ->gitHubRest
-                ->issues()
-                ->show(
-                    $this->release->repositoryUsername(),
-                    $this->release->repository(),
-                    intval($m['issue'])
-                ), ['number', 'user', 'labels', 'author_association']);
+            try {
+                return Arr::only($this->release
+                    ->gitHubRest
+                    ->issues()
+                    ->show(
+                        $this->release->repositoryUsername(),
+                        $this->release->repository(),
+                        intval($m['issue'])
+                    ),
+                    ['number', 'user', 'labels', 'author_association']);
+            } catch (RuntimeException $e) {
+                if ($e->getCode() === 404) return null;
+
+                throw $e;
+            }
         }
 
         return null;
