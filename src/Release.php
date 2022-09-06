@@ -95,6 +95,7 @@ class Release
 
         $changelog
             ->changes
+            ->unique()
             ->whereNotNull('issue')
             ->each(function (GitHub\Change $change) use ($changelog) {
                 $changelog
