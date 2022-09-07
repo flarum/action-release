@@ -28,6 +28,13 @@ class MarkdownWriter
         return $this;
     }
 
+    public function comment(string $comment): static
+    {
+        $this->writeLine("__{$comment}__");
+
+        return $this;
+    }
+
     public function divider(): static
     {
         $this->writeLine("\n---\n");

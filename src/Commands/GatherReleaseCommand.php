@@ -37,6 +37,7 @@ class GatherReleaseCommand extends Command
             ->contributors
             ->countBy('login')
             ->sortDesc()
+            ->tap(fn ($contributors) => $writer->comment("{$contributors->sum()} commits, {$contributors->count()} contributors"))
             ->each(fn ($count, $login) => $writer->li("user $login, commits $count"));
 
         $writer->divider();
@@ -48,6 +49,7 @@ class GatherReleaseCommand extends Command
             ->reporters
             ->countBy('login')
             ->sortDesc()
+            ->tap(fn ($reporters) => $writer->comment("{$reporters->sum()} commits, {$reporters->count()} reporters"))
             ->each(fn ($count, $login) => $writer->li("user $login, reports $count"));
 
         $writer->divider();
@@ -58,6 +60,7 @@ class GatherReleaseCommand extends Command
         $release
             ->changelog()
             ->changes
+            ->unique('message')
             ->sortBy('message')
             ->groupBy('type')
             ->each(function (Collection $set, string $key) use ($writer) {
