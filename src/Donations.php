@@ -26,7 +26,8 @@ class Donations extends Collection
             'login' => $item->fromAccount->slug,
             'name' => $item->fromAccount->name ?? $item->fromAccount->slug,
             'amount' => $item->amount->value * 100,
-            'currency' => $item->amount->currency
+            'currency' => $item->amount->currency,
+            'source' => 'oc'
         ]);
     }
 
@@ -49,7 +50,21 @@ class Donations extends Collection
             'login' => $item->sponsorEntity->login,
             'name' => $item->sponsorEntity->name ?? $item->sponsorEntity->login,
             'amount' => $item->tier->monthlyPriceInCents,
-            'currency' => 'USD'
+            'currency' => 'USD',
+            'source' => 'github'
         ]);
+    }
+
+    public function sumByLogin()
+    {
+        return $this
+            ->groupBy('login')
+            ->map(function (Donations $donations) {
+                $first = $donations->first();
+                $first->amount = $donations->sum('amount');
+
+                return $first;
+            })
+            ->all();
     }
 }

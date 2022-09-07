@@ -3,6 +3,7 @@
 namespace Flarum\Release;
 
 use Composer\Semver\VersionParser;
+use Flarum\Release\Donations as Collection;
 use Flarum\Release\GitHub\PublishReleasePullRequest;
 use Github\AuthMethod;
 use Github\Client as GitHubClient;
@@ -109,8 +110,8 @@ class Release
     public function donations(): Donations
     {
         return Donations::make()
-            ->merge((new OpenCollective\Donations($this))->all())
-            ->merge((new GitHub\Donations($this))->all());
+            ->merge((new OpenCollective\Donations($this))->sumByLogin())
+            ->merge((new GitHub\Donations($this))->sumByLogin());
     }
 
     public function publish(MarkdownWriter $writer)
