@@ -2,6 +2,7 @@
 
 namespace Flarum\Release\Commands;
 
+use Flarum\Release\GitHub\Change;
 use Flarum\Release\MarkdownWriter;
 use Flarum\Release\Release;
 use Illuminate\Support\Arr;
@@ -61,6 +62,7 @@ class GatherReleaseCommand extends Command
             ->changelog()
             ->changes
             ->unique('message')
+            ->filter(fn (Change $change) => $change->subject !== 'regression')
             ->sortBy('message')
             ->groupBy('type')
             ->each(function (Collection $set, string $key) use ($writer) {
