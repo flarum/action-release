@@ -41,7 +41,11 @@ class Change
         if ($pr) {
             $this->labels = Arr::pull($pr, 'labels', []);
 
-            $this->issue = $this->getIssue(Arr::get($pr, 'body'));
+            $body = Arr::get($pr, 'body');
+
+            if (! $body) return;
+
+            $this->issue = $this->getIssue($body);
 
             $this->pr = Arr::only($pr, ['number', 'title', 'author_association']);
 
