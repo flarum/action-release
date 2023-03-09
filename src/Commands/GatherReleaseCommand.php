@@ -25,6 +25,9 @@ class GatherReleaseCommand extends Command
             $release->setTag($_ENV['NEXT_TAG']);
         }
 
+        // Retrieve the commits once.
+        $changelog = $release->changelog();
+
         $writer = new MarkdownWriter($release->nextTag());
 
         $writer->header("Release {$release->nextTag()}");
@@ -33,8 +36,7 @@ class GatherReleaseCommand extends Command
 
         $writer->header('Contributors', 2);
 
-        $release
-            ->changelog()
+        $changelog
             ->contributors
             ->countBy('login')
             ->sortDesc()
@@ -45,8 +47,7 @@ class GatherReleaseCommand extends Command
 
         $writer->header('Reporters', 2);
 
-        $release
-            ->changelog()
+        $changelog
             ->reporters
             ->countBy('login')
             ->sortDesc()
@@ -58,11 +59,10 @@ class GatherReleaseCommand extends Command
         $compare = "https://github.com/".Release::REPOSITORY."/compare/{$release->lastTag()->name}...{$release->nextTag()}";
         $writer->header("[{$release->nextTag()}]($compare)", 2);
 
-        $release
-            ->changelog()
+        $changelog
             ->changes
             ->unique('message')
-            ->filter(fn (Change $change) => $change->subject !== 'regression')
+            ->filter(fn (Change $change) => $change->shouldBeLogged())
             ->sortBy('message')
             ->groupBy('type')
             ->each(function (Collection $set, string $key) use ($writer) {
@@ -84,7 +84,6 @@ class GatherReleaseCommand extends Command
 
                 $writer->li("{$backer->name}: $money");
             });
-
 
         $writer->close();
 

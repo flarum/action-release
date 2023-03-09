@@ -106,4 +106,9 @@ class Change
                 return 'Changed';
         }
     }
+
+    public function shouldBeLogged(): bool
+    {
+        return ! in_array($this->subject, ['(regression)', '(test)', '(qa)']);
+    }
 }

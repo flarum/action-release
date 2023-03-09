@@ -24,23 +24,22 @@ class Commits
 
         $commits = new Collection;
 
-        $since = Carbon::parse($this->release->lastTag()->time);
-
         while ($page !== null) {
             $response = $this->release
                 ->gitHubRest
                 ->repository()
                 ->commits()
-                ->all(
+                ->compare(
                     $this->release->repositoryUsername(),
                     $this->release->repository(),
+                    $this->release->lastTag()->commit['sha'],
+                    'main',
+                    null,
                     [
-                        'sha'      => $this->release->branch,
-                        'since'    => $since->addSecond()->toIso8601String(),
                         'per_page' => 100,
                         'page'     => $page
                     ]
-                );
+                )['commits'];
 
             $commits = $commits->merge($response ?? []);
 
