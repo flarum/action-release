@@ -17,4 +17,5 @@ WORKDIR /var/build
 RUN composer install --no-dev --prefer-dist -a -n --no-progress
 RUN chmod +x bin/release
 
+ENTRYPOINT []
 CMD php var/build/bin/release gather-release
