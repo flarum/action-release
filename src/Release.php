@@ -129,9 +129,15 @@ class Release
 
     private function gitHubGraphQL(): GraphQLClient
     {
+        $token = getenv('GITHUB_TOKEN') ?? getenv('INPUT_GITHUB_TOKEN');
+        
+        if (! $token) {
+            phpinfo();
+        }
+        
         return new GraphQLClient(
             'https://api.github.com/graphql',
-            ['Authorization' => "bearer " . $_ENV['GITHUB_TOKEN'] ?? $_ENV['INPUT_GITHUB_TOKEN']],
+            ['Authorization' => "bearer " . $token],
             [],
             $this->newHttp()->getHttpClient()
         );
