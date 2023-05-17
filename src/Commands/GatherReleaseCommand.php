@@ -21,10 +21,10 @@ class GatherReleaseCommand extends Command
     {
         $release = new Release;
 
-        if (isset($_ENV['NEXT_TAG'])) {
-            $release->setTag($_ENV['NEXT_TAG']);
-        } elseif (isset($_ENV['INPUT_NEXT_TAG'])) {
-            $release->setTag($_ENV['INPUT_NEXT_TAG']);
+        if (isset(getenv('NEXT_TAG'))) {
+            $release->setTag(getenv('NEXT_TAG'));
+        } elseif (isset(getenv('INPUT_NEXT_TAG'))) {
+            $release->setTag(getenv('INPUT_NEXT_TAG'));
         }
 
         // Retrieve the commits once.
