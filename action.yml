@@ -1,6 +1,16 @@
 name: Flarum Release Build
 description: Automatically prepares changelog & retrieves information for release
 author: 'Flarum'
+inputs:
+  github_token:
+    description: 'GitHub token'
+    required: true
+  next_tag:
+    description: 'New Release Tag'
+    required: true
+  open_collective_token:
+    description: 'Open Collective token'
+    required: true
 runs:
   using: 'docker'
   image: 'Dockerfile'
