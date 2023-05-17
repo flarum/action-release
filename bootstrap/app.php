@@ -2,10 +2,10 @@
 
 namespace Flarum\Release;
 
+use Dotenv\Dotenv;
 use Symfony\Component\Console\Application;
-use Symfony\Component\Dotenv\Dotenv;
 
-file_exists(__DIR__ . '/../.env') && (new Dotenv)->load(__DIR__ . '/../.env');
+file_exists(__DIR__ . '/../.env') && Dotenv::createImmutable(__DIR__.'../')->safeLoad();
 
 $app = new Application(
     'Flarum Release'
