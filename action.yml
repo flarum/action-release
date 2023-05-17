@@ -15,6 +15,6 @@ runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
-    - {{ $inputs.github_token }}
-    - {{ $inputs.next_tag }}
-    - {{ $inputs.open_collective_token }}
+    - ${{ inputs.github_token }}
+    - ${{ inputs.next_tag }}
+    - ${{ inputs.open_collective_token }}
