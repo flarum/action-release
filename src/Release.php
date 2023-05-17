@@ -128,16 +128,10 @@ class Release
     }
 
     private function gitHubGraphQL(): GraphQLClient
-    {
-        $token = getenv('GITHUB_TOKEN') ?? getenv('INPUT_GITHUB_TOKEN');
-        
-        if (! $token) {
-            phpinfo();
-        }
-        
+    {        
         return new GraphQLClient(
             'https://api.github.com/graphql',
-            ['Authorization' => "bearer " . $token],
+            ['Authorization' => "bearer " . $this->githubToken()],
             [],
             $this->newHttp()->getHttpClient()
         );
@@ -147,7 +141,7 @@ class Release
     {
         $client = new GitHubClient($this->newHttp());
 
-        $client->authenticate($_ENV['GITHUB_TOKEN'] ?? $_ENV['INPUT_GITHUB_TOKEN'], AuthMethod::ACCESS_TOKEN);
+        $client->authenticate($this->githubToken(), AuthMethod::ACCESS_TOKEN);
 
         return $client;
     }
@@ -156,9 +150,21 @@ class Release
     {
         return new GraphQLClient(
             'https://api.opencollective.com/graphql/v2',
-            ['Api-Key' => $_ENV['OPEN_COLLECTIVE_TOKEN'] ?? $_ENV['INPUT_OPEN_COLLECTIVE_TOKEN']],
+            ['Api-Key' => getenv('OPEN_COLLECTIVE_TOKEN') ?? getenv('INPUT_OPEN_COLLECTIVE_TOKEN')],
             [],
             $this->newHttp()->getHttpClient()
         );
+    }
+    
+    private function githubToken(): ?string
+    {
+        
+        $token = getenv('GITHUB_TOKEN') ?? getenv('INPUT_GITHUB_TOKEN');
+        
+        if (! $token) {
+            phpinfo();
+        }
+        
+        return $token;
     }
 }
