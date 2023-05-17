@@ -158,13 +158,6 @@ class Release
 
     private function githubToken(): ?string
     {
-
-        $token = env('GITHUB_TOKEN') ?? env('INPUT_GITHUB_TOKEN');
-
-        if (! $token) {
-            phpinfo();
-        }
-
-        return $token;
+        return env('GITHUB_TOKEN') ?? env('INPUT_GITHUB_TOKEN');
     }
 }
