@@ -33,7 +33,7 @@ class Commits
                     $this->release->repositoryUsername(),
                     $this->release->repository(),
                     $this->release->lastTag()->commit['sha'],
-                    'main',
+                    $this->release->branch,
                     null,
                     [
                         'per_page' => 100,
@@ -53,7 +53,8 @@ class Commits
     {
         return $this
             ->where('author.login', '!=', 'flarum-bot')
-            ->where('author.login', '!=', 'dependabot[bot]');
+            ->where('author.login', '!=', 'dependabot[bot]')
+            ->where('author.login', '!=', 'StyleCIBot');
     }
 
     public function __call(string $name, array $arguments)

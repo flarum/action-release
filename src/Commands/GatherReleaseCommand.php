@@ -5,21 +5,41 @@ namespace Flarum\Release\Commands;
 use Flarum\Release\GitHub\Change;
 use Flarum\Release\MarkdownWriter;
 use Flarum\Release\Release;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use NumberFormatter;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'gather-release',
+    description: 'Gathers the information for the release'
+)]
 class GatherReleaseCommand extends Command
 {
-    protected static $defaultName = 'gather-release';
-    protected static $defaultDescription = 'Gathers the information for the release';
+    protected function configure()
+    {
+        $this
+            ->addOption('local', null, InputOption::VALUE_OPTIONAL, 'Only output the result locally', false)
+            ->addOption('major', null, InputOption::VALUE_OPTIONAL, 'Major release', false)
+            ->addOption('stability', null, InputOption::VALUE_OPTIONAL, 'Stability', 'stable');
+    }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $release = new Release;
+        if (empty(env('GITHUB_TOKEN')) && empty(env('INPUT_GITHUB_TOKEN'))) {
+            $output->writeln('No GitHub token provided');
+
+            return Command::FAILURE;
+        }
+
+        $release = new Release(
+            branch: env('BRANCH'),
+            major: $input->hasOption('major'),
+            stability: $input->getOption('stability')
+        );
 
         if (env('NEXT_TAG')) {
             $release->setTag(env('NEXT_TAG'));
@@ -73,23 +93,31 @@ class GatherReleaseCommand extends Command
                 $set->each(fn ($change) => $writer->li("$change"));
             });
 
-        $writer->divider();
+        if (! empty(env('OPEN_COLLECTIVE_TOKEN')) || ! empty(env('INPUT_OPEN_COLLECTIVE_TOKEN'))) {
+            $writer->divider();
 
-        $writer->header('Donations', 2);
+            $writer->header('Donations', 2);
 
-        $release
-            ->donations()
-            ->filter(fn ($backer) => $backer->is_private === false)
-            ->sortByDesc('amount')
-            ->each(function ($backer) use ($writer) {
-                $money = $this->formatMoney($backer->amount/100, $backer->currency);
+            $release
+                ->donations()
+                ->filter(fn($backer) => $backer->is_private === false)
+                ->sortByDesc('amount')
+                ->each(function ($backer) use ($writer) {
+                    $money = $this->formatMoney($backer->amount / 100, $backer->currency);
 
-                $writer->li("{$backer->name}: $money");
-            });
+                    $writer->li("{$backer->name}: $money");
+                });
+        } else {
+            $output->writeln('No Open Collective token provided, skipping donations');
+        }
 
         $writer->close();
 
-        $release->publish($writer);
+        if ($input->hasOption('local')) {
+            $output->writeln((string) $writer);
+        } else {
+            $release->publish($writer);
+        }
 
         return Command::SUCCESS;
     }

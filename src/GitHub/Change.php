@@ -51,9 +51,7 @@ class Change
 
             $description = "{$pr['title']} [#{$pr['number']}]";
         } else {
-            $shortSha = substr($sha, 0, 7);
-
-            $description = explode("\n", $this->message)[0] . " ([$shortSha]($this->sha))";
+            $description = explode("\n", $this->message)[0] . " ($this->sha)";
         }
 
         $this->type = $this->getType();
@@ -91,24 +89,29 @@ class Change
         return null;
     }
 
-    public function getType(string $type = null)
+    public function getType(string $type = null): string
     {
-        switch ($type) {
-            case 'feat':
-                return 'Added';
-            case 'fix':
-                return 'Fixed';
-            case 'removed':
-            case 'deprecated':
-            case 'security':
-                return Str::ucfirst($type);
-            default:
-                return 'Changed';
+        if (str_starts_with($this->subject, 'fix ') || str_starts_with($this->subject, 'Fix ')) {
+            return 'Fixed';
         }
+
+        return match ($type) {
+            'feat' => 'Added',
+            'fix' => 'Fixed',
+            'removed', 'deprecated', 'security' => Str::ucfirst($type),
+            default => 'Changed',
+        };
     }
 
     public function shouldBeLogged(): bool
     {
+        if (str_starts_with($this->subject, 'Apply fixes from StyleCI')
+            || str_starts_with($this->subject, '`yarn format`')
+            || str_starts_with($this->subject, 'yarn format')
+        ) {
+            return false;
+        }
+
         return ! in_array($this->subject, ['(regression)', '(test)', '(qa)']);
     }
 }

@@ -20,7 +20,9 @@ class Release
     protected ?string $nextTag = null;
 
     public function __construct(
-        public string $branch = 'main'
+        public string $branch = 'main',
+        public bool $major = false,
+        public string $stability = 'stable'
     )
     {
         $this->gitHubRest = $this->gitHubRestClient();
@@ -52,9 +54,18 @@ class Release
 
             [$major, $minor, $patch] = explode('.', $normalized);
 
-            $minor++;
+            if ($this->major) {
+                $major++;
+                $minor = 0;
+            } else {
+                $minor++;
+            }
 
             $this->nextTag = "v$major.$minor.0";
+
+            if ($this->stability !== 'stable') {
+                $this->nextTag .= "-$this->stability";
+            }
         }
 
         return $this->nextTag;
