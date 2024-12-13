@@ -14,14 +14,14 @@ class Change
     public ?string $type = null;
     public ?string $subject = null;
     public ?array $issue = null;
+    public string $message = '';
 
     public function __construct(
         protected Release $release,
-        public string $sha,
-        public string $message
+        public array $commit,
     )
     {
-        $this->enrich($sha);
+        $this->enrich($commit);
     }
 
     public function __toString(): string
@@ -29,9 +29,11 @@ class Change
         return $this->message;
     }
 
-    protected function enrich(string $sha): void
+    protected function enrich(array $commit): void
     {
         $repository = Release::REPOSITORY;
+
+        $sha = Arr::get($commit, 'sha');
 
         $pr = Arr::get($this->release
             ->gitHubRest
@@ -39,6 +41,8 @@ class Change
             ->issues("$sha repo:$repository is:pr"), 'items.0');
 
         if ($pr) {
+            $author = Arr::get($pr, 'user.login');
+
             $this->labels = Arr::pull($pr, 'labels', []);
 
             $body = Arr::get($pr, 'body');
@@ -49,9 +53,12 @@ class Change
 
             $this->pr = Arr::only($pr, ['number', 'title', 'author_association']);
 
-            $description = "{$pr['title']} [#{$pr['number']}]";
+            $description = "{$pr['title']} by @$author [#{$pr['number']}]";
         } else {
-            $description = explode("\n", $this->message)[0] . " ($this->sha)";
+            $author = Arr::get($commit, 'author.login');
+            $message = Arr::get($commit, 'commit.message');
+
+            $description = explode("\n", $message)[0] . " by @$author ($sha)";
         }
 
         $this->type = $this->getType();

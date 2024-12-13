@@ -92,8 +92,7 @@ class Release
             ->each(function (array $commit) use ($changelog) {
                 $change = new GitHub\Change(
                     $this,
-                    Arr::get($commit, 'sha'),
-                    Arr::get($commit, 'commit.message'),
+                    $commit,
                 );
 
                 $changelog
